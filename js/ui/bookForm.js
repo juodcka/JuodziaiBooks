@@ -9,7 +9,6 @@ const form        = () => document.getElementById('book-form');
 const modalTitle  = () => document.getElementById('modal-title');
 const isbnInput   = () => document.getElementById('input-isbn');
 const scannerBox  = () => document.getElementById('scanner-container');
-const scannerVideo= () => document.getElementById('scanner-video');
 const shelfBoxes  = () => document.getElementById('shelf-checkboxes');
 
 let _scanner = null;
@@ -128,7 +127,7 @@ function populateFromISBN(data) {
 
 async function handleScanStart() {
   scannerBox().classList.remove('hidden');
-  _scanner = new BarcodeScanner(scannerVideo());
+  _scanner = new BarcodeScanner('scanner-view');
   try {
     const isbn = await _scanner.start();
     isbnInput().value = isbn;
@@ -141,9 +140,9 @@ async function handleScanStart() {
   }
 }
 
-function stopScanner() {
+async function stopScanner() {
   if (_scanner) {
-    _scanner.stop();
+    await _scanner.stop();
     _scanner = null;
   }
   scannerBox().classList.add('hidden');

@@ -306,12 +306,12 @@ img {
   gap: 8px;
 }
 
-.scanner-video {
+#scanner-view {
   width: 100%;
   max-width: 400px;
   border-radius: var(--radius-md);
+  overflow: hidden;
   border: 2px solid var(--color-primary);
-  background: #000;
 }
 
 /* ── Shelf checkboxes ─────────────────────────────────────────── */

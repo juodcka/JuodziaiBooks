@@ -11,8 +11,8 @@
   <link rel="stylesheet" href="css/modal.css" />
   <link rel="stylesheet" href="css/shelves.css" />
 
-  <!-- ZXing barcode scanner (pinned version, global: ZXingBrowser) -->
-  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
+  <!-- Barcode scanner -->
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 
@@ -99,7 +99,7 @@
 
       <!-- Camera preview (shown during scanning) -->
       <div id="scanner-container" class="scanner-container hidden">
-        <video id="scanner-video" class="scanner-video"></video>
+        <div id="scanner-view"></div>
         <button id="btn-cancel-scan" class="btn btn-ghost btn-sm">Cancel scan</button>
       </div>
 

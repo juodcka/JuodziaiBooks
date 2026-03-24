@@ -1,60 +1,68 @@
 /**
- * Barcode scanner using @zxing/browser@0.1.5 (loaded via CDN as window.ZXingBrowser).
+ * Barcode scanner using html5-qrcode@2.3.8
+ * (loaded via CDN in index.html — exposes window.Html5Qrcode)
  *
  * Usage:
- *   const scanner = new BarcodeScanner(videoElement);
- *   const isbn = await scanner.start();   // resolves when a barcode is decoded
+ *   const scanner = new BarcodeScanner('scanner-view');
+ *   const isbn = await scanner.start();
  *   scanner.stop();
  */
 export class BarcodeScanner {
-  /** @param {HTMLVideoElement} videoEl */
-  constructor(videoEl) {
-    this.videoEl = videoEl;
-    this._reader = null;
-    this._stopped = false;
+  /** @param {string} containerId - ID of the div to render the camera into */
+  constructor(containerId) {
+    this.containerId = containerId;
+    this._scanner = null;
   }
 
   /**
-   * Start continuous scanning. Resolves with the decoded string on first hit.
+   * Start scanning. Resolves with the decoded barcode string on first hit.
    * @returns {Promise<string>}
    */
   start() {
     return new Promise((resolve, reject) => {
-      const lib = window.ZXingBrowser;
-      console.log('[Scanner] window.ZXingBrowser:', lib);
-      console.log('[Scanner] BrowserMultiFormatReader:', lib?.BrowserMultiFormatReader);
-      if (!lib || !lib.BrowserMultiFormatReader) {
-        reject(new Error('ZXing library not loaded. Open the app via localhost or HTTPS.'));
+      if (!window.Html5Qrcode) {
+        reject(new Error('Html5Qrcode library not loaded.'));
         return;
       }
 
-      this._reader = new lib.BrowserMultiFormatReader();
-      this._stopped = false;
+      this._scanner = new window.Html5Qrcode(this.containerId);
 
-      // null deviceId = use default (back) camera
-      this._reader.decodeFromInputVideoDeviceContinuously(
-        null,
-        this.videoEl,
-        (result, _err) => {
-          if (this._stopped) return;
-          if (result) {
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 150 }, // wide box suits barcodes
+        aspectRatio: 1.5,
+        formatsToSupport: [
+          window.Html5QrcodeSupportedFormats?.EAN_13,
+          window.Html5QrcodeSupportedFormats?.EAN_8,
+          window.Html5QrcodeSupportedFormats?.CODE_128,
+        ].filter(v => v !== undefined),
+      };
+
+      this._scanner
+        .start(
+          { facingMode: 'environment' }, // rear camera
+          config,
+          (decodedText) => {
             this.stop();
-            resolve(result.getText());
+            resolve(decodedText);
           }
-          // _err fires on every frame without a barcode — expected, ignore
-        }
-      );
+        )
+        .catch(reject);
     });
   }
 
   /**
    * Stop the camera and release resources.
    */
-  stop() {
-    this._stopped = true;
-    if (this._reader) {
-      this._reader.reset();
-      this._reader = null;
+  async stop() {
+    if (this._scanner) {
+      try {
+        await this._scanner.stop();
+        this._scanner.clear();
+      } catch {
+        // already stopped — ignore
+      }
+      this._scanner = null;
     }
   }
 }
