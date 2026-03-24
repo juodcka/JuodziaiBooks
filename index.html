@@ -92,19 +92,26 @@
 
       <!-- ISBN scan / lookup bar -->
       <div class="modal__isbn-bar">
-        <input type="text" id="input-isbn" class="input" placeholder="ISBN" maxlength="20" />
+        <input type="text" id="input-isbn" class="input" placeholder="ISBN-13 or ISBN-10" maxlength="20" />
         <button id="btn-scan-isbn" class="btn btn-secondary" title="Scan barcode">📷 Scan</button>
         <button id="btn-fetch-isbn" class="btn btn-secondary">Lookup</button>
       </div>
 
-
       <form id="book-form" class="book-form" novalidate>
         <input type="hidden" id="field-book-id" />
+        <input type="hidden" id="field-isbn13" />
+        <input type="hidden" id="field-isbn10" />
+        <input type="hidden" id="field-google-books-url" />
 
         <div class="form-grid">
           <div class="form-group form-group--full">
             <label for="field-title">Title *</label>
             <input type="text" id="field-title" class="input" required />
+          </div>
+
+          <div class="form-group form-group--full">
+            <label for="field-subtitle">Subtitle</label>
+            <input type="text" id="field-subtitle" class="input" />
           </div>
 
           <div class="form-group">
@@ -157,13 +164,13 @@
           </div>
 
           <div class="form-group">
-            <label for="field-genre">Genre</label>
-            <input type="text" id="field-genre" class="input" />
+            <label for="field-categories">Categories <span class="label-hint">(comma separated)</span></label>
+            <input type="text" id="field-categories" class="input" placeholder="Fiction, Classic, …" />
           </div>
 
           <div class="form-group">
             <label for="field-tags">Tags <span class="label-hint">(comma separated)</span></label>
-            <input type="text" id="field-tags" class="input" placeholder="fiction, classic, …" />
+            <input type="text" id="field-tags" class="input" placeholder="favourite, gift, …" />
           </div>
 
           <div class="form-group form-group--full">

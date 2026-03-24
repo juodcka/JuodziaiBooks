@@ -6,16 +6,19 @@
  * @returns {Promise<BookData | null>}
  *
  * @typedef {Object} BookData
- * @property {string} isbn
- * @property {string} title
- * @property {string} author
- * @property {string} publisher
- * @property {string} publishingDate
- * @property {string} language
+ * @property {string}   isbn13
+ * @property {string}   isbn10
+ * @property {string}   title
+ * @property {string}   subtitle
+ * @property {string}   author
+ * @property {string}   publisher
+ * @property {string}   publishingDate
+ * @property {string}   language
  * @property {number|string} pages
- * @property {string} genre
- * @property {string} summary
- * @property {string} coverUrl
+ * @property {string[]} categories
+ * @property {string}   summary
+ * @property {string}   coverUrl
+ * @property {string}   googleBooksUrl
  */
 export async function fetchBookByISBN(isbn) {
   const clean = isbn.replace(/[-\s]/g, '');
@@ -38,17 +41,36 @@ async function fetchFromGoogleBooks(isbn) {
 
     const info = data.items[0].volumeInfo;
 
+    // Extract both ISBN-13 and ISBN-10 from industryIdentifiers
+    const ids = info.industryIdentifiers ?? [];
+    const isbn13 = ids.find(i => i.type === 'ISBN_13')?.identifier ?? isbn;
+    const isbn10 = ids.find(i => i.type === 'ISBN_10')?.identifier ?? '';
+
+    // Prefer the largest available cover image
+    const images = info.imageLinks ?? {};
+    const coverUrl = (
+      images.extraLarge ??
+      images.large ??
+      images.medium ??
+      images.thumbnail ??
+      images.smallThumbnail ??
+      ''
+    ).replace('http:', 'https:');
+
     return {
-      isbn,
-      title: info.title ?? '',
-      author: info.authors?.join(', ') ?? '',
-      publisher: info.publisher ?? '',
+      isbn13,
+      isbn10,
+      title:          info.title ?? '',
+      subtitle:       info.subtitle ?? '',
+      author:         info.authors?.join(', ') ?? '',
+      publisher:      info.publisher ?? '',
       publishingDate: info.publishedDate ?? '',
-      language: info.language ?? '',
-      pages: info.pageCount ?? '',
-      genre: info.categories?.[0] ?? '',
-      summary: info.description ?? '',
-      coverUrl: info.imageLinks?.thumbnail?.replace('http:', 'https:') ?? '',
+      language:       info.language ?? '',
+      pages:          info.pageCount ?? '',
+      categories:     info.categories ?? [],
+      summary:        info.description ?? '',
+      coverUrl,
+      googleBooksUrl: info.infoLink ?? '',
     };
   } catch {
     return null;
@@ -66,21 +88,23 @@ async function fetchFromOpenLibrary(isbn) {
     const book = data[`ISBN:${isbn}`];
     if (!book) return null;
 
-    const author = book.authors?.map(a => a.name).join(', ') ?? '';
-    const publisher = book.publishers?.map(p => p.name).join(', ') ?? '';
+    const is13 = isbn.length === 13;
     const coverUrl = book.cover?.large ?? book.cover?.medium ?? book.cover?.small ?? '';
 
     return {
-      isbn,
-      title: book.title ?? '',
-      author,
-      publisher,
+      isbn13:         is13 ? isbn : '',
+      isbn10:         is13 ? '' : isbn,
+      title:          book.title ?? '',
+      subtitle:       book.subtitle ?? '',
+      author:         book.authors?.map(a => a.name).join(', ') ?? '',
+      publisher:      book.publishers?.map(p => p.name).join(', ') ?? '',
       publishingDate: book.publish_date ?? '',
-      language: '',
-      pages: book.number_of_pages ?? '',
-      genre: book.subjects?.[0]?.name ?? '',
-      summary: book.notes?.value ?? book.notes ?? '',
+      language:       '',
+      pages:          book.number_of_pages ?? '',
+      categories:     book.subjects?.map(s => s.name) ?? [],
+      summary:        book.notes?.value ?? book.notes ?? '',
       coverUrl,
+      googleBooksUrl: '',
     };
   } catch {
     return null;

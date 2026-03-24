@@ -45,20 +45,25 @@ export function openEditBookForm(book, { shelves, onSaved, user }) {
   clearForm();
   modalTitle().textContent = 'Edit Book';
 
-  setField('field-book-id',    book.id ?? '');
-  isbnInput().value =          book.isbn ?? '';
-  setField('field-title',      book.title ?? '');
-  setField('field-author',     book.author ?? '');
-  setField('field-publisher',  book.publisher ?? '');
-  setField('field-publish-date', book.publishingDate ?? '');
-  setField('field-format',     book.format ?? '');
-  setField('field-language',   book.language ?? '');
-  setField('field-pages',      book.pages ?? '');
-  setField('field-price',      book.price ?? '');
-  setField('field-currency',   book.currency ?? 'EUR');
-  setField('field-genre',      book.genre ?? '');
-  setField('field-tags',       (book.tags ?? []).join(', '));
-  setField('field-summary',    book.summary ?? '');
+  setField('field-book-id',          book.id ?? '');
+  isbnInput().value =                book.isbn13 ?? book.isbn10 ?? '';
+  setField('field-isbn13',           book.isbn13 ?? '');
+  setField('field-isbn10',           book.isbn10 ?? '');
+  setField('field-title',            book.title ?? '');
+  setField('field-subtitle',         book.subtitle ?? '');
+  setField('field-author',           book.author ?? '');
+  setField('field-publisher',        book.publisher ?? '');
+  setField('field-publish-date',     book.publishingDate ?? '');
+  setField('field-format',           book.format ?? '');
+  setField('field-language',         book.language ?? '');
+  setField('field-pages',            book.pages ?? '');
+  setField('field-price',            book.price ?? '');
+  setField('field-currency',         book.currency ?? 'EUR');
+  setField('field-categories',       (book.categories ?? []).join(', '));
+  setField('field-tags',             (book.tags ?? []).join(', '));
+  setField('field-summary',          book.summary ?? '');
+  setField('field-google-books-url', book.googleBooksUrl ?? '');
+  form().dataset.coverUrl =          book.coverUrl ?? '';
 
   const selectedIds = getShelvesForBook(book.id, shelves);
   renderShelfCheckboxes(selectedIds);
@@ -114,15 +119,18 @@ async function handleISBNLookup() {
 }
 
 function populateFromISBN(data) {
-  setField('field-title',       data.title);
-  setField('field-author',      data.author);
-  setField('field-publisher',   data.publisher);
+  setField('field-isbn13',       data.isbn13);
+  setField('field-isbn10',       data.isbn10);
+  setField('field-title',        data.title);
+  setField('field-subtitle',     data.subtitle);
+  setField('field-author',       data.author);
+  setField('field-publisher',    data.publisher);
   setField('field-publish-date', data.publishingDate);
-  setField('field-language',    data.language);
-  setField('field-pages',       data.pages);
-  setField('field-genre',       data.genre);
-  setField('field-summary',     data.summary);
-  // coverUrl is stored but not shown in the form — it will be saved to Firestore
+  setField('field-language',     data.language);
+  setField('field-pages',        data.pages);
+  setField('field-categories',   data.categories.join(', '));
+  setField('field-summary',      data.summary);
+  setField('field-google-books-url', data.googleBooksUrl);
   form().dataset.coverUrl = data.coverUrl ?? '';
 }
 
@@ -168,9 +176,14 @@ async function handleSubmit(e) {
   saveBtn.textContent = 'Saving…';
 
   try {
+    const splitComma = id =>
+      getField(id).split(',').map(t => t.trim()).filter(Boolean);
+
     const bookData = {
-      isbn:           isbnInput().value.trim(),
+      isbn13:         getField('field-isbn13') || isbnInput().value.trim(),
+      isbn10:         getField('field-isbn10'),
       title,
+      subtitle:       getField('field-subtitle').trim(),
       author,
       publisher:      getField('field-publisher').trim(),
       publishingDate: getField('field-publish-date').trim(),
@@ -179,10 +192,11 @@ async function handleSubmit(e) {
       pages:          Number(getField('field-pages')) || '',
       price:          parseFloat(getField('field-price')) || '',
       currency:       getField('field-currency'),
-      genre:          getField('field-genre').trim(),
-      tags:           getField('field-tags').split(',').map(t => t.trim()).filter(Boolean),
+      categories:     splitComma('field-categories'),
+      tags:           splitComma('field-tags'),
       summary:        getField('field-summary').trim(),
       coverUrl:       form().dataset.coverUrl ?? '',
+      googleBooksUrl: getField('field-google-books-url'),
     };
 
     const bookId = getField('field-book-id');

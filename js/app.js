@@ -147,22 +147,25 @@ function openDetailModal(book) {
       return uid; // could be resolved to name in a future enhancement
     });
 
+  const allCategories = [...(book.categories ?? []), ...(book.tags ?? [])];
+
   body.innerHTML = `
     ${book.coverUrl ? `<img class="detail-cover" src="${esc(book.coverUrl)}" alt="${esc(book.title)}" />` : ''}
     <p style="font-size:15px;font-weight:500;color:var(--color-text-muted)">${esc(book.author)}</p>
+    ${book.subtitle ? `<p style="font-size:13px;color:var(--color-text-muted);margin-top:2px">${esc(book.subtitle)}</p>` : ''}
     <dl class="detail-meta">
-      ${row('ISBN',       book.isbn)}
+      ${row('ISBN-13',    book.isbn13)}
+      ${row('ISBN-10',    book.isbn10)}
       ${row('Publisher',  book.publisher)}
       ${row('Published',  book.publishingDate)}
       ${row('Format',     book.format)}
       ${row('Language',   book.language)}
       ${row('Pages',      book.pages)}
       ${row('Price',      book.price ? `${book.price} ${book.currency ?? ''}` : '')}
-      ${row('Genre',      book.genre)}
     </dl>
-    ${book.tags?.length ? `<div class="detail-shelves">${book.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+    ${allCategories.length ? `<div class="detail-shelves">${allCategories.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
     ${book.summary ? `<p class="detail-summary">${esc(book.summary)}</p>` : ''}
-    ${shelfNames.length ? `<div class="detail-shelves">${shelfNames.map(n => `<span class="tag">${esc(n)}</span>`).join('')}</div>` : ''}
+    ${shelfNames.length ? `<div class="detail-shelves" style="margin-top:12px">${shelfNames.map(n => `<span class="tag">${esc(n)}</span>`).join('')}</div>` : ''}
     <div class="detail-readers">
       <strong>Currently reading</strong>
       ${readerNames.length ? readerNames.join(', ') : 'Nobody yet'}
@@ -171,7 +174,8 @@ function openDetailModal(book) {
         ${isReading ? '📖 Stop reading' : '📖 I\'m reading this'}
       </button>
     </div>
-    ${book.addedBy?.displayName ? `<p style="font-size:12px;color:var(--color-text-light);margin-top:12px">Added by ${esc(book.addedBy.displayName)}</p>` : ''}
+    ${book.googleBooksUrl ? `<p style="margin-top:12px"><a href="${esc(book.googleBooksUrl)}" target="_blank" rel="noopener" style="font-size:13px;color:var(--color-primary)">View on Google Books ↗</a></p>` : ''}
+    ${book.addedBy?.displayName ? `<p style="font-size:12px;color:var(--color-text-light);margin-top:8px">Added by ${esc(book.addedBy.displayName)}</p>` : ''}
   `;
 
   document.getElementById('btn-toggle-reading').addEventListener('click', async () => {

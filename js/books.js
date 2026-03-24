@@ -15,8 +15,10 @@ const BOOKS_COL = 'books';
 /**
  * @typedef {Object} BookDoc
  * @property {string}   [id]
- * @property {string}   isbn
+ * @property {string}   isbn13
+ * @property {string}   isbn10
  * @property {string}   title
+ * @property {string}   subtitle
  * @property {string}   author
  * @property {string}   publisher
  * @property {string}   publishingDate
@@ -25,10 +27,11 @@ const BOOKS_COL = 'books';
  * @property {number}   pages
  * @property {number}   price
  * @property {string}   currency
- * @property {string}   genre
+ * @property {string[]} categories
  * @property {string[]} tags
  * @property {string}   summary
  * @property {string}   coverUrl
+ * @property {string}   googleBooksUrl
  * @property {{ uid: string, displayName: string, photoURL: string }} addedBy
  * @property {string[]} currentReaders  - UIDs of users currently reading
  * @property {any}      addedAt
