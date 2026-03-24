@@ -88,12 +88,6 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 
 // ── Add book ───────────────────────────────────────────────────
 function handleOpenAddBook() {
-  const form = document.getElementById('book-form');
-  form.dataset.addedBy = JSON.stringify({
-    uid: _user.uid,
-    displayName: _user.displayName ?? '',
-    photoURL: _user.photoURL ?? '',
-  });
   openAddBookForm({ shelves: _shelves, onSaved: refresh, user: _user });
 }
 
@@ -190,8 +184,6 @@ function openDetailModal(book) {
 
   document.getElementById('btn-detail-edit').onclick = () => {
     closeDetailModal();
-    const form = document.getElementById('book-form');
-    form.dataset.addedBy = JSON.stringify(book.addedBy ?? {});
     openEditBookForm(book, { shelves: _shelves, onSaved: refresh, user: _user });
   };
 

@@ -14,6 +14,7 @@ const shelfBoxes  = () => document.getElementById('shelf-checkboxes');
 let _scanner = null;
 let _allShelves = [];
 let _onSaved = null;
+let _addedBy = null;
 
 // ── Public API ─────────────────────────────────────────────────
 
@@ -24,6 +25,7 @@ let _onSaved = null;
 export function openAddBookForm({ shelves, onSaved, user }) {
   _allShelves = shelves;
   _onSaved = onSaved;
+  _addedBy = { uid: user.uid, displayName: user.displayName ?? '', photoURL: user.photoURL ?? '' };
   clearForm();
   setField('field-book-id', '');
   modalTitle().textContent = 'Add Book';
@@ -39,6 +41,7 @@ export function openAddBookForm({ shelves, onSaved, user }) {
 export function openEditBookForm(book, { shelves, onSaved, user }) {
   _allShelves = shelves;
   _onSaved = onSaved;
+  _addedBy = book.addedBy ?? { uid: user.uid, displayName: user.displayName ?? '', photoURL: user.photoURL ?? '' };
   clearForm();
   modalTitle().textContent = 'Edit Book';
 
@@ -191,9 +194,7 @@ async function handleSubmit(e) {
       await syncBookShelves(bookId, selectedShelfIds, _allShelves);
       showToast('Book updated.');
     } else {
-      // Add — addedBy is set in app.js context; we read it from the form dataset
-      const addedBy = JSON.parse(form().dataset.addedBy ?? 'null');
-      const newId = await addBook({ ...bookData, addedBy, currentReaders: [] });
+      const newId = await addBook({ ...bookData, addedBy: _addedBy, currentReaders: [] });
       await syncBookShelves(newId, selectedShelfIds, _allShelves);
       showToast('Book added.');
     }
