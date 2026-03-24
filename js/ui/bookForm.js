@@ -202,7 +202,7 @@ async function handleSubmit(e) {
     if (_onSaved) _onSaved();
   } catch (err) {
     console.error(err);
-    showToast('Error saving book. Please try again.');
+    showToast('Error: ' + (err?.message ?? String(err)));
   } finally {
     saveBtn.disabled = false;
     saveBtn.textContent = 'Save Book';
