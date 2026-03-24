@@ -97,11 +97,6 @@
         <button id="btn-fetch-isbn" class="btn btn-secondary">Lookup</button>
       </div>
 
-      <!-- Camera preview (shown during scanning) -->
-      <div id="scanner-container" class="scanner-container hidden">
-        <div id="scanner-view"></div>
-        <button id="btn-cancel-scan" class="btn btn-ghost btn-sm">Cancel scan</button>
-      </div>
 
       <form id="book-form" class="book-form" novalidate>
         <input type="hidden" id="field-book-id" />
@@ -231,6 +226,15 @@
         <button id="btn-detail-delete" class="btn btn-danger">Delete</button>
       </div>
     </div>
+  </div>
+
+  <!-- ── Camera scanner overlay (fullscreen, outside all modals) ── -->
+  <div id="scanner-container" class="scanner-overlay hidden">
+    <div class="scanner-overlay__header">
+      <span>Point camera at barcode</span>
+      <button id="btn-cancel-scan" class="btn btn-ghost btn-sm">✕ Cancel</button>
+    </div>
+    <div id="scanner-view"></div>
   </div>
 
   <script type="module" src="js/app.js"></script>

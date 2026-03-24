@@ -126,15 +126,15 @@ function populateFromISBN(data) {
 // ── Camera scan ────────────────────────────────────────────────
 
 async function handleScanStart() {
-  scannerBox().classList.remove('hidden');
   _scanner = new BarcodeScanner('scanner-view');
+  scannerBox().classList.remove('hidden');
   try {
     const isbn = await _scanner.start();
+    await stopScanner();
     isbnInput().value = isbn;
-    stopScanner();
     await handleISBNLookup();
   } catch (err) {
-    stopScanner();
+    await stopScanner();
     showToast('Scan error: ' + (err?.message ?? String(err)));
     console.error(err);
   }
@@ -253,5 +253,5 @@ function clearForm() {
   form().dataset.coverUrl = '';
   form().dataset.addedBy = '';
   shelfBoxes().innerHTML = '';
-  stopScanner();
+  stopScanner(); // fire-and-forget is fine here
 }
