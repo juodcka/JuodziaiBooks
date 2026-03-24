@@ -1,5 +1,5 @@
 /**
- * Barcode scanner using @zxing/browser@0.1.4 (loaded via CDN as window.ZXingBrowser).
+ * Barcode scanner using @zxing/browser@0.1.5 (loaded via CDN as window.ZXingBrowser).
  *
  * Usage:
  *   const scanner = new BarcodeScanner(videoElement);
@@ -15,8 +15,7 @@ export class BarcodeScanner {
   }
 
   /**
-   * Start continuous scanning. Resolves with the decoded ISBN string on first hit.
-   * Rejects if the camera cannot be accessed or ZXing is unavailable.
+   * Start continuous scanning. Resolves with the decoded string on first hit.
    * @returns {Promise<string>}
    */
   start() {
@@ -30,9 +29,8 @@ export class BarcodeScanner {
       this._reader = new lib.BrowserMultiFormatReader();
       this._stopped = false;
 
-      // decodeFromVideoDeviceContinuously(deviceId, videoEl, callback)
-      // deviceId = null → use default camera
-      this._reader.decodeFromVideoDeviceContinuously(
+      // null deviceId = use default (back) camera
+      this._reader.decodeFromInputVideoDeviceContinuously(
         null,
         this.videoEl,
         (result, _err) => {
@@ -41,7 +39,7 @@ export class BarcodeScanner {
             this.stop();
             resolve(result.getText());
           }
-          // err fires on every frame without a barcode — expected, ignore it
+          // _err fires on every frame without a barcode — expected, ignore
         }
       );
     });
