@@ -1,0 +1,49 @@
+/* ── Shelf view header ────────────────────────────────────────── */
+.shelf-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  height: var(--topbar-height);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.shelf-header__title {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.shelf-header__badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* ── Shelf list item actions ──────────────────────────────────── */
+.shelf-list__item {
+  position: relative;
+}
+
+.shelf-list__item:hover .shelf-list__delete {
+  opacity: 1;
+}
+
+.shelf-list__delete {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 14px;
+  transition: opacity 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.shelf-list__delete:hover {
+  color: #fff;
+}

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JuodziaiBooks</title>
+
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/navbar.css" />
+  <link rel="stylesheet" href="css/book-card.css" />
+  <link rel="stylesheet" href="css/modal.css" />
+  <link rel="stylesheet" href="css/shelves.css" />
+
+  <!-- ZXing barcode scanner -->
+  <script src="https://unpkg.com/@zxing/browser@latest/umd/index.min.js"></script>
+</head>
+<body>
+
+  <!-- ── Login screen ─────────────────────────────────────────── -->
+  <div id="login-screen" class="login-screen hidden">
+    <div class="login-card">
+      <h1 class="login-title">JuodziaiBooks</h1>
+      <p class="login-subtitle">Your family library</p>
+      <button id="btn-google-login" class="btn btn-google">
+        <img src="assets/icons/google.svg" alt="" class="btn-google__icon" />
+        Sign in with Google
+      </button>
+    </div>
+  </div>
+
+  <!-- ── App shell (shown after login) ────────────────────────── -->
+  <div id="app" class="app hidden">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar__header">
+        <span class="sidebar__logo">JuodziaiBooks</span>
+        <button id="btn-new-shelf" class="btn btn-icon" title="New shelf">+</button>
+      </div>
+
+      <nav class="sidebar__nav">
+        <a href="#/" class="sidebar__link" data-route="/">All Books</a>
+      </nav>
+
+      <div class="sidebar__section-title">Shared Shelves</div>
+      <ul id="shared-shelves-list" class="shelf-list"></ul>
+
+      <div class="sidebar__section-title">My Shelves</div>
+      <ul id="my-shelves-list" class="shelf-list"></ul>
+
+      <div class="sidebar__footer">
+        <div id="user-info" class="user-info">
+          <img id="user-avatar" class="user-info__avatar" src="" alt="" />
+          <span id="user-name" class="user-info__name"></span>
+        </div>
+        <button id="btn-logout" class="btn btn-ghost btn-sm">Sign out</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main id="main-content" class="main-content">
+
+      <!-- Topbar -->
+      <header class="topbar">
+        <button id="btn-sidebar-toggle" class="btn btn-icon topbar__menu-btn">☰</button>
+        <h2 id="view-title" class="topbar__title">All Books</h2>
+        <div class="topbar__actions">
+          <button id="btn-add-book" class="btn btn-primary">+ Add Book</button>
+        </div>
+      </header>
+
+      <!-- Book grid -->
+      <div id="books-grid" class="books-grid"></div>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="empty-state hidden">
+        <p>No books here yet.</p>
+        <button class="btn btn-primary" id="btn-add-book-empty">+ Add your first book</button>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ── Add / Edit Book Modal ─────────────────────────────────── -->
+  <div id="book-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal__backdrop"></div>
+    <div class="modal__box">
+      <header class="modal__header">
+        <h3 id="modal-title" class="modal__title">Add Book</h3>
+        <button class="modal__close" id="btn-modal-close" aria-label="Close">&times;</button>
+      </header>
+
+      <!-- ISBN scan / lookup bar -->
+      <div class="modal__isbn-bar">
+        <input type="text" id="input-isbn" class="input" placeholder="ISBN" maxlength="20" />
+        <button id="btn-scan-isbn" class="btn btn-secondary" title="Scan barcode">📷 Scan</button>
+        <button id="btn-fetch-isbn" class="btn btn-secondary">Lookup</button>
+      </div>
+
+      <!-- Camera preview (shown during scanning) -->
+      <div id="scanner-container" class="scanner-container hidden">
+        <video id="scanner-video" class="scanner-video"></video>
+        <button id="btn-cancel-scan" class="btn btn-ghost btn-sm">Cancel scan</button>
+      </div>
+
+      <form id="book-form" class="book-form" novalidate>
+        <input type="hidden" id="field-book-id" />
+
+        <div class="form-grid">
+          <div class="form-group form-group--full">
+            <label for="field-title">Title *</label>
+            <input type="text" id="field-title" class="input" required />
+          </div>
+
+          <div class="form-group">
+            <label for="field-author">Author *</label>
+            <input type="text" id="field-author" class="input" required />
+          </div>
+
+          <div class="form-group">
+            <label for="field-publisher">Publisher</label>
+            <input type="text" id="field-publisher" class="input" />
+          </div>
+
+          <div class="form-group">
+            <label for="field-publish-date">Publishing Date</label>
+            <input type="text" id="field-publish-date" class="input" placeholder="e.g. 2021" />
+          </div>
+
+          <div class="form-group">
+            <label for="field-format">Format</label>
+            <select id="field-format" class="input">
+              <option value="">— select —</option>
+              <option value="Hardcover">Hardcover</option>
+              <option value="Paperback">Paperback</option>
+              <option value="Ebook">Ebook</option>
+              <option value="Audiobook">Audiobook</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="field-language">Language</label>
+            <input type="text" id="field-language" class="input" placeholder="e.g. English" />
+          </div>
+
+          <div class="form-group">
+            <label for="field-pages">Pages</label>
+            <input type="number" id="field-pages" class="input" min="1" />
+          </div>
+
+          <div class="form-group form-group--price">
+            <label for="field-price">Price Paid</label>
+            <div class="price-input">
+              <input type="number" id="field-price" class="input" min="0" step="0.01" />
+              <select id="field-currency" class="input input--currency">
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+                <option value="GBP">GBP</option>
+                <option value="LTL">LTL</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="field-genre">Genre</label>
+            <input type="text" id="field-genre" class="input" />
+          </div>
+
+          <div class="form-group">
+            <label for="field-tags">Tags <span class="label-hint">(comma separated)</span></label>
+            <input type="text" id="field-tags" class="input" placeholder="fiction, classic, …" />
+          </div>
+
+          <div class="form-group form-group--full">
+            <label for="field-summary">Summary</label>
+            <textarea id="field-summary" class="input input--textarea" rows="4"></textarea>
+          </div>
+
+          <div class="form-group form-group--full">
+            <label for="field-shelves">Add to Shelves</label>
+            <div id="shelf-checkboxes" class="shelf-checkboxes"></div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="btn-form-cancel" class="btn btn-ghost">Cancel</button>
+          <button type="submit" id="btn-form-save" class="btn btn-primary">Save Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── New Shelf Modal ───────────────────────────────────────── -->
+  <div id="shelf-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__box modal__box--sm">
+      <header class="modal__header">
+        <h3 class="modal__title">New Shelf</h3>
+        <button class="modal__close" id="btn-shelf-modal-close">&times;</button>
+      </header>
+      <div class="modal__body">
+        <div class="form-group">
+          <label for="input-shelf-name">Shelf name *</label>
+          <input type="text" id="input-shelf-name" class="input" />
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="input-shelf-shared" checked />
+            Shared with family
+          </label>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button id="btn-shelf-cancel" class="btn btn-ghost">Cancel</button>
+        <button id="btn-shelf-save" class="btn btn-primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Book Detail Modal ─────────────────────────────────────── -->
+  <div id="detail-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__box modal__box--detail">
+      <header class="modal__header">
+        <h3 id="detail-title" class="modal__title"></h3>
+        <button class="modal__close" id="btn-detail-close">&times;</button>
+      </header>
+      <div id="detail-body" class="detail-body"></div>
+      <div class="form-actions">
+        <button id="btn-detail-edit" class="btn btn-secondary">Edit</button>
+        <button id="btn-detail-delete" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
