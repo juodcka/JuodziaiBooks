@@ -136,7 +136,7 @@ async function handleScanStart() {
     await handleISBNLookup();
   } catch (err) {
     stopScanner();
-    showToast('Camera access failed or scan cancelled.');
+    showToast('Scan error: ' + (err?.message ?? String(err)));
     console.error(err);
   }
 }

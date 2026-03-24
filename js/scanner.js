@@ -21,6 +21,8 @@ export class BarcodeScanner {
   start() {
     return new Promise((resolve, reject) => {
       const lib = window.ZXingBrowser;
+      console.log('[Scanner] window.ZXingBrowser:', lib);
+      console.log('[Scanner] BrowserMultiFormatReader:', lib?.BrowserMultiFormatReader);
       if (!lib || !lib.BrowserMultiFormatReader) {
         reject(new Error('ZXing library not loaded. Open the app via localhost or HTTPS.'));
         return;
