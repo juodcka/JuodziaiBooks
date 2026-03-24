@@ -21,30 +21,32 @@ export class BarcodeScanner {
    */
   start() {
     return new Promise((resolve, reject) => {
-      if (!window.ZXingBrowser) {
-        reject(new Error('ZXing library not loaded'));
+      // @zxing/browser UMD exposes itself as window.ZXingBrowser
+      const lib = window.ZXingBrowser;
+      if (!lib || !lib.BrowserMultiFormatReader) {
+        reject(new Error('ZXing library not loaded. Make sure you are on localhost or HTTPS.'));
         return;
       }
 
       const hints = new Map();
       // Focus on 1D barcode formats used for ISBN
       const formats = [
-        window.ZXingBrowser.BarcodeFormat?.EAN_13,
-        window.ZXingBrowser.BarcodeFormat?.EAN_8,
-        window.ZXingBrowser.BarcodeFormat?.CODE_128,
+        lib.BarcodeFormat?.EAN_13,
+        lib.BarcodeFormat?.EAN_8,
+        lib.BarcodeFormat?.CODE_128,
       ].filter(Boolean);
 
       if (formats.length) {
-        hints.set(window.ZXingBrowser.DecodeHintType?.POSSIBLE_FORMATS, formats);
+        hints.set(lib.DecodeHintType?.POSSIBLE_FORMATS, formats);
       }
 
-      this._reader = new window.ZXingBrowser.BrowserMultiFormatReader(hints);
+      this._reader = new lib.BrowserMultiFormatReader(hints);
       this._stopped = false;
 
       this._reader.decodeFromVideoDevice(
         undefined, // use default camera
         this.videoEl,
-        (result, err) => {
+        (result, _err) => {
           if (this._stopped) return;
           if (result) {
             this.stop();
